@@ -1,4 +1,7 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq.Expressions;
+using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Xml.Schema;
 
 namespace 猜数字
@@ -7,17 +10,34 @@ namespace 猜数字
     {
         static void Main(string[] args)
         {
+            int a =1 ;
+            int intwanJiaShuRu = 1;
+            string userName = "'";
             bool youXiXunHuan = true;
             string panDuanYouXi;
             int jieGuo;
             bool xunhuan = true;
-            int chance;
+            int chance = 1;
+            bool tryDeCeShi;
             Console.WriteLine("猜数字");
             Thread.Sleep(250);
-            Console.WriteLine("版本v4.00");
+            Console.WriteLine("版本v5.00");
             Thread.Sleep(250);
+            zheli:
             Console.Write("请输入你的用户名：");
-            string userName = Console.ReadLine();
+            try
+            {
+                userName = Console.ReadLine();
+                if (userName == "")
+                {
+                    throw new Exception("你没有输入名字!");
+                }
+            }
+            catch (Exception b)
+            {
+                Console.WriteLine(b.Message);
+                goto zheli;
+            }
             while (youXiXunHuan)
             {
                 xunhuan = true;
@@ -30,7 +50,7 @@ namespace 猜数字
                     Console.WriteLine("这是一个猜数字的游戏，你的同类会随机的从0~100（包括100）中随机的抽取一个数字");
                     Thread.Sleep(250);
                     Console.WriteLine($"你个废物要做的就是猜对它！！！");
-                    Console.Write("你可以自由选择有多少次机会！输入：");
+                    //Console.Write("你可以自由选择有多少次机会！输入：");
                 }
                 else
                 {
@@ -38,19 +58,64 @@ namespace 猜数字
                     Console.WriteLine("这是一个猜数字的游戏，电脑会随机的从0~100（包括100）中随机的抽取一个数字");
                     Thread.Sleep(250);
                     Console.WriteLine($"你要做的就是猜对它！！！");
-                    Console.Write("你可以自由选择有多少次机会！请输入：");
+                    //Console.Write("你可以自由选择有多少次机会！请输入：");
                 }
+                Retry:
+                Console.Write("你可以自由选择有多少次机会！请输入：");
                 string strChance = Console.ReadLine();
-                chance = int.Parse(strChance);
+                try
+                {
+                    chance = int.Parse(strChance);
+                    switch (chance)
+                    {
+                        case <= 0:
+                        throw new Exception("机会不能为0或负数！");
+                    }
+                }   
+                catch (FormatException)
+                {
+                    Console.WriteLine("你输入的不是一个数字！");
+                    goto Retry;
+                }
+                catch (Exception h)
+                {
+                    Console.WriteLine(h.Message);
+                    goto Retry;
+                }
                 //Console.WriteLine(miDi); //测试代码，一会注释掉
                 while (xunhuan)
                 {
+                    jihui:
                     Console.WriteLine($"你现在有{chance}次机会");
                     Console.Write("请输入一个你猜的数字：");
                     string wanJiaShuRu = Console.ReadLine();
-                    int intwanJiaShuRu = int.Parse(wanJiaShuRu);
-                    int a;
-                    a = panduan(intwanJiaShuRu, miDi);
+                    try
+                    {
+                        intwanJiaShuRu = int.Parse(wanJiaShuRu);
+                        //if (intwanJiaShuRu < 0 || intwanJiaShuRu > 100) ;
+                        //{
+                            //throw new Exception("你猜的数字不在有效范围！");
+                            //Console.WriteLine("你猜的数字不在有效范围！");
+                            //goto jihui;
+                        //}
+                    }
+                    catch(FormatException)
+                    {
+                        Console.WriteLine("这不是有效数字！消耗一次机会！！！");
+                        chance -=1;
+                        goto jihui;
+                    }
+                    try
+                    {
+                        a = panduan(intwanJiaShuRu, miDi);
+                    }
+                    catch (OverflowException i)
+                    {
+                        Console.WriteLine(i.Message);
+                        goto jihui;
+                    }
+                    if (chance == 0)
+                        chance = 1;
                     if (chance > 1)
                     {
                         if (a == 1)
@@ -114,19 +179,27 @@ namespace 猜数字
         private static int panduan(int intwanJiaShuRu, int suiJi)
         {
             // 0代表猜对，1代表猜太大，2代表猜太小
-            int fanHui;
-            if (intwanJiaShuRu < suiJi)
+            int fanHui = 1;
+            if(intwanJiaShuRu < 0 || intwanJiaShuRu > 100)
             {
-                fanHui = 2;
-            }
-            else if (intwanJiaShuRu > suiJi)
-            {
-                fanHui = 1;
+                throw new OverflowException("范围是1到100!");
             }
             else
             {
-                fanHui = 0;
+                if (intwanJiaShuRu < suiJi)
+                {
+                    fanHui = 2;
+                }
+                else if (intwanJiaShuRu > suiJi)
+                {
+                    fanHui = 1;
+                }
+                else
+                {
+                    fanHui = 0;
+                }
             }
+           
             return fanHui;
         }
     }
